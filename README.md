@@ -1,7 +1,7 @@
 
 # React chatbot with ollama
 
-this simple ui for chatbor using ollama models
+this simple ui for chatbot using ollama models
 
 
 
@@ -43,17 +43,17 @@ Install Ollama in official website
 for more information read ollama docs in 
 
 ```bash 
-https://github.com/ollama/ollama/tree/main/docs
+  https://github.com/ollama/ollama/tree/main/docs
 ```
 
 Install lbrary model in ollama if you using linux
 ```bash
-    ollama run "model"
+  ollama run "model"
 ```
 
 you can search library model in this website
 ```bash
-    https://ollama.com/library
+  https://ollama.com/library
 ```
 
 happy hacking
