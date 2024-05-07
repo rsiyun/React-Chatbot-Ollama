@@ -6,7 +6,7 @@ this simple ui for chatbot using ollama models
 
 
 
-## Run react project
+## Run next js project
 
 Clone the project
 
@@ -29,7 +29,7 @@ Install dependencies
 Start the server
 
 ```bash
-  npm run start
+  npm run dev
 ```
 
 ## Run ollama
