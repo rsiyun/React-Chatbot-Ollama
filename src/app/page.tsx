@@ -1,6 +1,6 @@
 'use client'
-import Link from "next/link";
 import React, { useState, FormEvent, useEffect } from 'react'
+import CodeBlock from '~/components/CodeBlock';
 
 export default function HomePage() {
   const [history, setHistory] = useState<{ type: 'chatbot' | 'you'; prompt: string; timestamp: number }[]>([]);
@@ -8,19 +8,17 @@ export default function HomePage() {
   const [context, setContext] = useState([]);
   const [prompt, setPrompt] = useState('');
 
-  const isPrompt = (message) =>{
+  const isPrompt = (message: string) =>{
     if (message != "") {
       setPrompt(message)
     }else{
       setPrompt("")
     }
   }
-
   const sendPrompt = async () => {
     setLoading(true);
     
-    let tempHistory = [...history, { prompt: "", type: 'chatbot' as 'chatbot', timestamp: Date.now() }];
-
+    let tempHistory = [...history, { prompt: "", type: 'chatbot' as 'chatbot', timestamp: Date.now()}];
     setHistory(tempHistory);
     const tempIndex = tempHistory.length - 1;
 
@@ -44,12 +42,12 @@ export default function HomePage() {
           setLoading(false);
           break;
         }
-
+        
         const decodedValue = new TextDecoder('utf-8').decode(value);
-
+        
         try {
           const { response, done, context } = JSON.parse(decodedValue);
-
+          
           if (response) {
             serverResponse += response;
             tempHistory[tempIndex].prompt = serverResponse;
@@ -66,9 +64,29 @@ export default function HomePage() {
       }
     }
   };
+  const onFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    try {
+      e.preventDefault();
+      setHistory(prevHistory => [...prevHistory, { prompt, type: 'you', timestamp: Date.now()}])
+    } catch (err: any) {
+      console.error(err)
+    }
+  }
+
+  const showChat = (item:any, index:number) => {
+    if (item.prompt !== "") {
+      return (
+          <div className="mb-6" key={index}>
+              <h1 className="text-xl font-bold mb-2">{`${item.type}`}</h1>
+                <CodeBlock value={item.prompt} />
+          </div>
+      );
+  }
+    }
+
   useEffect(() => {
-    if (history.length > 0 && history[history.length - 1].type === 'you') {
-      sendPrompt();
+    if (history.length > 0 && history[history.length - 1]?.type === 'you') {
+      sendPrompt()
     }
   }, [history, sendPrompt]);
   return (
@@ -79,27 +97,20 @@ export default function HomePage() {
             <div className="overflow-y-auto h-full">
               <div className="flex justify-center">
               <div className="w-[80%] pt-8">
-              {history.map((item, index) => (
-                <div className="mb-6" key={index}>
-                  <h1 className="text-xl font-bold mb-2">{`${item.type}`}</h1>
-                  <p className="bg-sky-400 w-auto inline-block rounded-lg py-2 px-4">{item.prompt}</p>
-                </div>
-                ))}
+              {history.map((item, index) =>showChat(item, index))}
               </div>
               </div>
             </div>
           </div>
         </div>
         <div className="flex justify-center items-center pb-6 ">
-          {/* <form action=""> */}
+          <form onSubmit={onFormSubmit}>
             <input type="text" placeholder="Ketik pesan" className="bg-transparent outline-none border w-[600px] py-4 px-4 rounded-xl border-white" onChange={(e) => isPrompt(e.target.value)} value={prompt}/>
-            <button           
+            <button
+              type='submit'           
               disabled={loading}
-              onClick={async () => {
-                setHistory(prevHistory => [...prevHistory, { prompt, type: 'you', timestamp: Date.now() }])
-              }} 
-              className="bg-sky-400 rounded px-4 py-2 ml-4">send</button>
-          {/* </form> */}
+              className="bg-sky-400 rounded px-4 py-2 ml-4 hidden">send</button>
+          </form>
         </div>
       </div>
     </main>
