@@ -1,5 +1,6 @@
-import { Moon, Plus, Sun } from "lucide-react";
-import { useState } from "react";
+import { usePathname } from 'next/navigation'
+import { Moon, Plus, Sun, Trash } from "lucide-react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   SidebarContent,
@@ -17,6 +18,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { db } from "@/lib/dexie";
 import { useLiveQuery } from "dexie-react-hooks";
+import Link from 'next/link';
 
 const chatGroups = [
   { id: "1", name: "React Basics" },
@@ -29,12 +31,25 @@ export const ChatSidebar = () => {
   const [activeChat, setActiveChat] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false)
   const [textInput, setTextInput] = useState<string>("")
+  const pathname = usePathname()
+
   const threads = useLiveQuery(() => db.getAllThreads(), [])
+
   const handleCreateChat = async () => {
     const threadId = await db.createChat(textInput);
     setDialogOpen(false);
     setTextInput("");
   }
+  
+  const handleDeleteThreads = async (id: string) => {
+    await db.deleteThreads(id)
+  }
+
+  useLayoutEffect(() => {
+    if (pathname) {
+      setActiveChat(pathname.split("/")[2]);
+    }
+  }, [pathname])
 
   return (
     <>
@@ -45,15 +60,15 @@ export const ChatSidebar = () => {
           </DialogHeader>
           <div className="space-y-1">
             <Label htmlFor="thread-title">Judul Chat</Label>
-            <Input 
+            <Input
               type="text"
-              id="thread-title" 
+              id="thread-title"
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
             />
           </div>
           <DialogFooter>
-            <Button variant={"ghost"} onClick={()=>setDialogOpen(false)}>Cancel</Button>
+            <Button variant={"ghost"} onClick={() => setDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleCreateChat}>Buat Chat baru</Button>
           </DialogFooter>
         </DialogContent>
@@ -72,11 +87,15 @@ export const ChatSidebar = () => {
               <SidebarMenu>
                 {threads?.map((chat) => (
                   <SidebarMenuItem key={chat.id}>
-                    <SidebarMenuButton
-                      onClick={() => setActiveChat(chat.id)}
-                      isActive={activeChat === chat.id}
-                    >
-                      {chat.title}
+                    <SidebarMenuButton isActive={activeChat === chat.id} className='px-3 py-5'>
+                      <div className='justify-between w-full items-center flex'>
+                        <Link href={`/chat-page/${chat.id}`}>
+                          {chat.title}
+                        </Link>
+                        <span className='block hover:bg-sidebar p-2 rounded transition-all duration-300' onClick={(e) => {handleDeleteThreads(chat.id)}}>
+                            <Trash className='h-4 w-4'/>
+                        </span>
+                      </div>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
